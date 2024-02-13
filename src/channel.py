@@ -11,26 +11,19 @@ class Channel:
     load_dotenv(NAME_DIR)
     api_key: str = os.getenv('YT_API_KEY')
     # создать специальный объект для работы с API
-    youtube = build('youtube', 'v3', developerKey=api_key)
+    __youtube = build('youtube', 'v3', developerKey=api_key)
     list_ = []
 
     def __init__(self, channel_id: str) -> None:
         """Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API."""
 
-        channel = Channel.youtube.channels().list(id=channel_id, part='snippet,statistics').execute()
+        channel = Channel.__youtube.channels().list(id=channel_id, part='snippet,statistics').execute()
         self.__channel_id = channel
         self.id = channel_id
-        item = channel['items'][0]
-        self.__title = item['snippet']['title']
-        self.__video_count = item['statistics']['videoCount']
-        self.description = item['snippet']['description']
-        self.view_count = item['statistics']['viewCount']
-        self.subscriber = int(item['statistics']['subscriberCount'])
-        kind = item['kind'].split('#')
-        self.__url = f'https://www.{kind[0]}.com/{kind[1]}/{self.id}'
+        self.item = channel['items'][0]
 
-    def __str__(self):
-        return f"{self.__title}\n{self.__url}"
+    def __str__(self) -> str:
+        return f"{self.title}\n{self.url}"
 
     def __add__(self, other) -> int:
         return self.subscriber + other.subscriber
@@ -51,31 +44,46 @@ class Channel:
     @property
     def channel_id(self):
         return self.__channel_id
+
     @property
     def title(self):
-        return self.__title
+        return self.item['snippet']['title']
 
     @property
     def video_count(self):
-        return self.__video_count
+        return self.item['statistics']['videoCount']
 
     @property
     def url(self):
-        return self.__url
+        kind = self.item['kind'].split('#')
+        url = f'https://www.{kind[0]}.com/{kind[1]}/{self.id}'
+        return url
+
+    @property
+    def description(self):
+        return self.item['snippet']['description']
+
+    @property
+    def view_count(self):
+        return self.item['statistics']['viewCount']
+
+    @property
+    def subscriber(self):
+        return int(self.item['statistics']['subscriberCount'])
 
     @classmethod
     def get_service(cls):
         """
         возвращающий объект для работы с YouTube API
         """
-        return cls.youtube
+        return cls.__youtube
 
     def to_json(self, file_name: str) -> None:
         """
         сохраняющий в файл значения атрибутов экземпляра Channel
         """
         data = json.dumps(self.__channel_id)
-        with open(file_name, 'a', encoding='utf-8') as file:
+        with open(file_name, 'w', encoding='utf-8') as file:
             file.write(data)
 
 
