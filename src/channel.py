@@ -25,8 +25,24 @@ class Channel:
         self.__video_count = item['statistics']['videoCount']
         self.description = item['snippet']['description']
         self.view_count = item['statistics']['viewCount']
+        self.subscriber = int(item['statistics']['subscriberCount'])
         kind = item['kind'].split('#')
         self.__url = f'https://www.{kind[0]}.com/{kind[1]}/{self.id}'
+
+    def __str__(self):
+        return f"{self.__title}\n{self.__url}"
+
+    def __add__(self, other) -> int:
+        return self.subscriber + other.subscriber
+
+    def __sub__(self, other) -> int:
+        return self.subscriber - other.subscriber
+
+    def __gt__(self, other) -> bool:
+        return self.subscriber > other.subscriber
+
+    def __ge__(self, other) -> bool:
+        return self.subscriber >= other.subscriber
 
     def print_info(self) -> None:
         """Выводит в консоль информацию о канале."""
