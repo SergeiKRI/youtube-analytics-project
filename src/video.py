@@ -1,8 +1,6 @@
-import json
 import os
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
-import isodate
 from settings import NAME_DIR
 
 
@@ -16,8 +14,8 @@ class Video:
 
         self.video_id = video_id
         self.video_response = Video.get_serves().videos().list(part='snippet,statistics,contentDetails,topicDetails',
-                                                            id=video_id
-                                                            ).execute()
+                                                               id=video_id
+                                                               ).execute()
 
     def __str__(self):
         return self.title
@@ -43,16 +41,17 @@ class Video:
         return build('youtube', 'v3', developerKey=cls.api_key)
 
 
-
 class PLVideo(Video):
     """Класс для 'id видео' и 'id плейлиста'"""
 
     def __init__(self, video_id, playlist_id):
+        self.video_id = video_id
         super().__init__(video_id)
         self.playlist_videos = Video.get_serves().playlistItems().list(playlistId=playlist_id,
-                                               part='contentDetails',
-                                               maxResults=50,
-                                               ).execute()
+                                                                       part='contentDetails',
+                                                                       maxResults=50,
+                                                                       ).execute()
+
     @property
     def video_ids(self):
         return [video['contentDetails']['videoId'] for video in self.playlist_videos['items']]
